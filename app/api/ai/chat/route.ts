@@ -1,13 +1,13 @@
 import { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { streamChat } from "@/lib/llm";
+import { streamChat, getAvailableModels } from "@/lib/llm";
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    return new Response(JSON.stringify({ error: "Unauthorized - يرجى تسجيل الدخول" }), {
       status: 401, headers: { "Content-Type": "application/json" },
     });
   }
@@ -21,6 +21,15 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    const models = getAvailableModels();
+    if (models.length === 0) {
+      return new Response(JSON.stringify({
+        error: "لا يوجد مزود LLM مُعد. أضف API keys في Vercel Environment Variables."
+      }), {
+        status: 503, headers: { "Content-Type": "application/json" },
+      });
+    }
+
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
@@ -30,7 +39,9 @@ export async function POST(request: NextRequest) {
           }
           controller.close();
         } catch (error) {
-          controller.error(error);
+          const msg = error instanceof Error ? error.message : "Unknown LLM error";
+          controller.enqueue(encoder.encode(`\n\n❌ خطأ: ${msg}`));
+          controller.close();
         }
       },
     });
@@ -42,8 +53,9 @@ export async function POST(request: NextRequest) {
         "Cache-Control": "no-cache",
       },
     });
-  } catch {
-    return new Response(JSON.stringify({ error: "Failed to generate response" }), {
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "Unknown error";
+    return new Response(JSON.stringify({ error: `فشل المحادثة: ${msg}` }), {
       status: 500, headers: { "Content-Type": "application/json" },
     });
   }
