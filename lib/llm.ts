@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import OpenAI from "openai";
 
-export type LLMProvider = "anthropic" | "openai";
+export type LLMProvider = "anthropic" | "openai" | "custom";
 
 const CRYPTO_SYSTEM_PROMPT = `You are an expert cryptocurrency market analyst. You provide analysis in both Arabic and English based on the user's language.
 
@@ -20,10 +20,87 @@ English: "⚠️ This is not financial advice. Always do your own research befor
 
 function getProvider(): LLMProvider {
   const provider = process.env.LLM_PROVIDER?.toLowerCase();
+
+  // Explicit provider selection
+  if (provider === "custom" && process.env.CUSTOM_LLM_URL) return "custom";
   if (provider === "openai" && process.env.OPENAI_API_KEY) return "openai";
+  if (provider === "anthropic" && process.env.ANTHROPIC_API_KEY) return "anthropic";
+
+  // Auto-detect: custom first (cheapest), then anthropic, then openai
+  if (process.env.CUSTOM_LLM_URL && process.env.CUSTOM_LLM_API_KEY) return "custom";
   if (process.env.ANTHROPIC_API_KEY) return "anthropic";
   if (process.env.OPENAI_API_KEY) return "openai";
-  throw new Error("No LLM API key configured. Set ANTHROPIC_API_KEY or OPENAI_API_KEY.");
+
+  throw new Error("No LLM configured. Set CUSTOM_LLM_URL+CUSTOM_LLM_API_KEY, ANTHROPIC_API_KEY, or OPENAI_API_KEY.");
+}
+
+function getCustomModel(): string {
+  return process.env.CUSTOM_LLM_MODEL || "gpt-3.5-turbo";
+}
+
+async function* streamCustom(
+  systemPrompt: string,
+  messages: Array<{ role: "user" | "assistant" | "system"; content: string }>
+): AsyncGenerator<string> {
+  const client = new OpenAI({
+    apiKey: process.env.CUSTOM_LLM_API_KEY || "no-key",
+    baseURL: process.env.CUSTOM_LLM_URL,
+  });
+
+  const stream = await client.chat.completions.create({
+    model: getCustomModel(),
+    max_tokens: 4096,
+    stream: true,
+    messages: [
+      { role: "system", content: systemPrompt },
+      ...messages,
+    ],
+  });
+
+  for await (const chunk of stream) {
+    const text = chunk.choices[0]?.delta?.content;
+    if (text) yield text;
+  }
+}
+
+async function* streamAnthropic(
+  systemPrompt: string,
+  messages: Array<{ role: "user" | "assistant"; content: string }>
+): AsyncGenerator<string> {
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const stream = client.messages.stream({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 4096,
+    system: systemPrompt,
+    messages,
+  });
+
+  for await (const event of stream) {
+    if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
+      yield event.delta.text;
+    }
+  }
+}
+
+async function* streamOpenAI(
+  systemPrompt: string,
+  messages: Array<{ role: "user" | "assistant" | "system"; content: string }>
+): AsyncGenerator<string> {
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const stream = await client.chat.completions.create({
+    model: "gpt-4o",
+    max_tokens: 4096,
+    stream: true,
+    messages: [
+      { role: "system", content: systemPrompt },
+      ...messages,
+    ],
+  });
+
+  for await (const chunk of stream) {
+    const text = chunk.choices[0]?.delta?.content;
+    if (text) yield text;
+  }
 }
 
 export async function* streamAnalysis(
@@ -35,36 +112,16 @@ export async function* streamAnalysis(
     ? `Context:\n${context}\n\nUser request:\n${prompt}`
     : prompt;
 
-  if (provider === "anthropic") {
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-    const stream = client.messages.stream({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 2048,
-      system: CRYPTO_SYSTEM_PROMPT,
-      messages: [{ role: "user", content: userMessage }],
-    });
+  const messages: Array<{ role: "user" | "assistant"; content: string }> = [
+    { role: "user", content: userMessage },
+  ];
 
-    for await (const event of stream) {
-      if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
-        yield event.delta.text;
-      }
-    }
+  if (provider === "custom") {
+    yield* streamCustom(CRYPTO_SYSTEM_PROMPT, messages);
+  } else if (provider === "anthropic") {
+    yield* streamAnthropic(CRYPTO_SYSTEM_PROMPT, messages);
   } else {
-    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    const stream = await client.chat.completions.create({
-      model: "gpt-4o",
-      max_tokens: 2048,
-      stream: true,
-      messages: [
-        { role: "system", content: CRYPTO_SYSTEM_PROMPT },
-        { role: "user", content: userMessage },
-      ],
-    });
-
-    for await (const chunk of stream) {
-      const text = chunk.choices[0]?.delta?.content;
-      if (text) yield text;
-    }
+    yield* streamOpenAI(CRYPTO_SYSTEM_PROMPT, messages);
   }
 }
 
@@ -73,35 +130,11 @@ export async function* streamChat(
 ): AsyncGenerator<string> {
   const provider = getProvider();
 
-  if (provider === "anthropic") {
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-    const stream = client.messages.stream({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 2048,
-      system: CRYPTO_SYSTEM_PROMPT,
-      messages,
-    });
-
-    for await (const event of stream) {
-      if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
-        yield event.delta.text;
-      }
-    }
+  if (provider === "custom") {
+    yield* streamCustom(CRYPTO_SYSTEM_PROMPT, messages);
+  } else if (provider === "anthropic") {
+    yield* streamAnthropic(CRYPTO_SYSTEM_PROMPT, messages);
   } else {
-    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    const stream = await client.chat.completions.create({
-      model: "gpt-4o",
-      max_tokens: 2048,
-      stream: true,
-      messages: [
-        { role: "system", content: CRYPTO_SYSTEM_PROMPT },
-        ...messages,
-      ],
-    });
-
-    for await (const chunk of stream) {
-      const text = chunk.choices[0]?.delta?.content;
-      if (text) yield text;
-    }
+    yield* streamOpenAI(CRYPTO_SYSTEM_PROMPT, messages);
   }
 }
