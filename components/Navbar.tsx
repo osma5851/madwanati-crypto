@@ -15,87 +15,89 @@ export default function Navbar() {
     { href: "/market", label: t("market") },
     { href: "/?category=تداول", label: t("trading") },
     { href: "/?category=تحليل فني", label: t("analysis") },
-    { href: "/?category=أخبار السوق", label: t("news") },
   ];
 
   return (
-    <nav className="nav-bar sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+    <nav className="nav-bar" style={{ position: 'sticky', top: 0, zIndex: 50 }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56 }}>
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group flex-shrink-0">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-105 btn-gold">
-              <span className="text-slate-900 font-black text-xl">₿</span>
-            </div>
-            <div className="hidden sm:block">
-              <span className="text-lg font-black gold-text">مدونات الكريبتو</span>
-              <div className="text-[10px] text-slate-500 leading-none -mt-0.5">Crypto Blog</div>
-            </div>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', flexShrink: 0 }}>
+            <div style={{
+              width: 34, height: 34, borderRadius: 8,
+              background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '1rem', fontWeight: 900, color: '#fff',
+            }}>₿</div>
+            <span style={{ fontWeight: 800, fontSize: '1rem', color: '#fafafa' }}>مدونات الكريبتو</span>
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden lg:flex items-center gap-1">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 2 }} className="hidden-mobile">
             {navItems.map((item) => (
               <Link
                 key={item.href + item.label}
                 href={item.href}
-                className="px-3 py-2 text-slate-400 hover:text-amber-400 rounded-lg transition-all duration-200 font-medium text-sm hover:bg-white/5"
+                style={{
+                  padding: '0.4rem 0.75rem', color: '#71717a', textDecoration: 'none',
+                  fontSize: '0.85rem', fontWeight: 500, borderRadius: 6,
+                  transition: 'color 0.15s',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = '#fafafa'; e.currentTarget.style.background = '#18181b'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = '#71717a'; e.currentTarget.style.background = 'transparent'; }}
               >
                 {item.label}
               </Link>
             ))}
-            <div className="flex items-center gap-1 mx-2">
-              <ThemeToggle />
-              <LanguageToggle />
-            </div>
-            <Link href="/admin" className="btn-gold text-xs px-3 py-2 rounded-lg">
+            <div style={{ width: 1, height: 20, background: '#27272a', margin: '0 8px' }} />
+            <ThemeToggle />
+            <LanguageToggle />
+            <Link href="/admin" className="btn-primary" style={{ marginRight: 4, textDecoration: 'none', padding: '0.35rem 0.85rem', fontSize: '0.8rem' }}>
               {t("admin")}
             </Link>
           </div>
 
-          {/* Mobile menu button */}
+          {/* Mobile toggle */}
           <button
-            className="lg:hidden p-2 rounded-lg text-slate-400 hover:text-amber-400 hover:bg-white/5 transition-colors"
             onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="toggle menu"
+            className="show-mobile"
+            style={{ padding: 8, background: 'none', border: 'none', color: '#71717a', cursor: 'pointer' }}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {mobileOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              )}
+            <svg style={{ width: 22, height: 22 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {mobileOpen
+                ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              }
             </svg>
           </button>
         </div>
 
-        {/* Mobile Nav */}
+        {/* Mobile Menu */}
         {mobileOpen && (
-          <div className="lg:hidden pb-4 border-t border-slate-700/40 mt-1 pt-3 space-y-1">
+          <div style={{ paddingBottom: 16, borderTop: '1px solid #27272a', marginTop: 4, paddingTop: 12 }}>
             {navItems.map((item) => (
-              <Link
-                key={item.href + item.label}
-                href={item.href}
-                className="block px-4 py-2.5 text-slate-400 hover:text-amber-400 hover:bg-white/5 rounded-lg font-medium transition-colors"
+              <Link key={item.href + item.label} href={item.href}
                 onClick={() => setMobileOpen(false)}
-              >
+                style={{ display: 'block', padding: '0.6rem 0.75rem', color: '#a1a1aa', textDecoration: 'none', fontSize: '0.9rem', borderRadius: 6 }}>
                 {item.label}
               </Link>
             ))}
-            <div className="px-4 py-2 flex gap-2">
-              <ThemeToggle />
-              <LanguageToggle />
+            <div style={{ display: 'flex', gap: 8, padding: '0.5rem 0.75rem' }}>
+              <ThemeToggle /><LanguageToggle />
             </div>
-            <Link
-              href="/admin"
-              className="block mx-4 py-2.5 btn-gold rounded-lg font-medium text-center mt-2"
-              onClick={() => setMobileOpen(false)}
-            >
+            <Link href="/admin" onClick={() => setMobileOpen(false)}
+              style={{ display: 'block', margin: '0.5rem 0.75rem 0', padding: '0.5rem', textAlign: 'center', textDecoration: 'none' }}
+              className="btn-primary">
               {t("admin")}
             </Link>
           </div>
         )}
       </div>
+
+      <style>{`
+        @media (min-width: 768px) { .hidden-mobile { display: flex !important; } .show-mobile { display: none !important; } }
+        @media (max-width: 767px) { .hidden-mobile { display: none !important; } .show-mobile { display: block !important; } }
+      `}</style>
     </nav>
   );
 }

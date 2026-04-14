@@ -7,142 +7,85 @@ interface ArticleCardProps {
   featured?: boolean;
 }
 
-const CATEGORY_COLORS: Record<string, { bg: string; text: string }> = {
-  بيتكوين:         { bg: "rgba(247,147,26,0.15)",  text: "#f7931a" },
-  إيثيريوم:        { bg: "rgba(98,126,234,0.15)",  text: "#627eea" },
-  "تمويل لامركزي": { bg: "rgba(34,197,94,0.15)",   text: "#86efac" },
-  NFT:             { bg: "rgba(167,139,250,0.15)", text: "#c4b5fd" },
-  تداول:           { bg: "rgba(245,158,11,0.15)",  text: "#fcd34d" },
-  "تحليل فني":     { bg: "rgba(59,130,246,0.15)",  text: "#93c5fd" },
-  "أخبار السوق":   { bg: "rgba(244,63,94,0.15)",   text: "#fda4af" },
-  تعليم:           { bg: "rgba(100,116,139,0.15)", text: "#94a3b8" },
+const CATEGORY_COLORS: Record<string, string> = {
+  بيتكوين: "#f7931a",
+  إيثيريوم: "#627eea",
+  "تمويل لامركزي": "#22c55e",
+  NFT: "#c084fc",
+  تداول: "#f59e0b",
+  "تحليل فني": "#3b82f6",
+  "أخبار السوق": "#f43f5e",
+  تعليم: "#71717a",
 };
 
 export default function ArticleCard({ article, featured = false }: ArticleCardProps) {
   const readTime = getReadingTime(article.content);
-  const cat = CATEGORY_COLORS[article.category] || { bg: "rgba(245,158,11,0.15)", text: "#fcd34d" };
-
-  if (featured) {
-    return (
-      <Link href={`/articles/${article.slug}`} className="group block h-full">
-        <div
-          className="rounded-2xl p-7 h-full flex flex-col transition-all duration-300 hover:-translate-y-1 card-accent"
-          style={{
-            background: 'linear-gradient(135deg, #1e3a5f 0%, #162032 100%)',
-            border: '1px solid rgba(245,158,11,0.25)',
-            boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
-          }}
-        >
-          {/* Badges */}
-          <div className="flex items-center gap-2 mb-4">
-            <span
-              className="text-xs px-3 py-1 rounded-full font-semibold"
-              style={{ background: cat.bg, color: cat.text }}
-            >
-              {article.category}
-            </span>
-            <span
-              className="text-xs px-3 py-1 rounded-full font-bold"
-              style={{ background: 'rgba(245,158,11,0.2)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.4)' }}
-            >
-              ★ مميز
-            </span>
-          </div>
-
-          {/* Title */}
-          <h2
-            className="text-xl font-bold mb-3 leading-tight line-clamp-2 flex-shrink-0 transition-colors duration-200"
-            style={{ color: '#f1f5f9' }}
-          >
-            <span className="group-hover:text-amber-400 transition-colors duration-200">{article.title}</span>
-          </h2>
-
-          {/* Excerpt */}
-          <p className="text-sm leading-relaxed line-clamp-3 flex-1 mb-5" style={{ color: '#94a3b8' }}>
-            {article.excerpt}
-          </p>
-
-          {/* Meta */}
-          <div className="flex items-center justify-between text-xs" style={{ color: '#64748b' }}>
-            <span className="flex items-center gap-1">
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              {formatDate(article.publishedAt)}
-            </span>
-            <span className="flex items-center gap-1">
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              {readTime} دقائق
-            </span>
-          </div>
-
-          {/* Bottom arrow indicator */}
-          <div className="mt-4 flex items-center gap-1 text-xs font-medium transition-all duration-200 group-hover:gap-2" style={{ color: '#f59e0b' }}>
-            <span>اقرأ المقال</span>
-            <svg className="w-3.5 h-3.5 rotate-180 transition-transform duration-200 group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-            </svg>
-          </div>
-        </div>
-      </Link>
-    );
-  }
+  const catColor = CATEGORY_COLORS[article.category] || "#a855f7";
 
   return (
-    <Link href={`/articles/${article.slug}`} className="group block h-full">
+    <Link href={`/articles/${article.slug}`} style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
       <article
-        className="rounded-2xl p-6 h-full flex flex-col transition-all duration-300 hover:-translate-y-1 card-accent gold-glow-hover"
+        className="flux-card card-accent"
         style={{
-          background: '#1e293b',
-          border: '1px solid rgba(30,58,95,0.8)',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.25)',
+          padding: '1.25rem',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          transition: 'border-color 0.2s, transform 0.2s, box-shadow 0.2s',
+          cursor: 'pointer',
+          ...(featured ? { borderColor: 'rgba(168,85,247,0.3)' } : {}),
         }}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = '#3f3f46'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = featured ? 'rgba(168,85,247,0.3)' : '#27272a'; }}
       >
-        {/* Category + Tags */}
-        <div className="flex items-center gap-2 mb-3 flex-wrap">
-          <span
-            className="text-xs px-2.5 py-1 rounded-full font-semibold"
-            style={{ background: cat.bg, color: cat.text }}
-          >
+        {/* Cover image */}
+        {article.coverImage && (
+          <div style={{ marginBottom: 12, borderRadius: 8, overflow: 'hidden', height: 140 }}>
+            <img src={article.coverImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          </div>
+        )}
+
+        {/* Badges */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
+          <span style={{
+            fontSize: '0.7rem', fontWeight: 600, padding: '2px 8px', borderRadius: 4,
+            background: `${catColor}15`, color: catColor, border: `1px solid ${catColor}30`,
+          }}>
             {article.category}
           </span>
+          {featured && article.featured && (
+            <span style={{ fontSize: '0.7rem', fontWeight: 600, padding: '2px 8px', borderRadius: 4, background: 'rgba(245,158,11,0.1)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.2)' }}>
+              ★ مميز
+            </span>
+          )}
           {article.tags.slice(0, 2).map((tag) => (
-            <span
-              key={tag}
-              className="text-xs px-2 py-0.5 rounded-full"
-              style={{ background: 'rgba(30,58,95,0.6)', color: '#64748b' }}
-            >
+            <span key={tag} style={{ fontSize: '0.65rem', padding: '1px 6px', borderRadius: 4, background: '#18181b', color: '#52525b' }}>
               {tag}
             </span>
           ))}
         </div>
 
         {/* Title */}
-        <h2 className="text-base font-bold mb-2 leading-tight line-clamp-2 flex-shrink-0 transition-colors duration-200 group-hover:text-amber-400" style={{ color: '#e2e8f0' }}>
+        <h2 style={{
+          fontSize: featured ? '1.05rem' : '0.95rem', fontWeight: 700,
+          lineHeight: 1.4, marginBottom: 8, color: '#fafafa',
+          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+        }}>
           {article.title}
         </h2>
 
         {/* Excerpt */}
-        <p className="text-sm leading-relaxed flex-1 line-clamp-3 mb-4" style={{ color: '#64748b' }}>
+        <p style={{
+          fontSize: '0.8rem', lineHeight: 1.6, color: '#52525b', flex: 1, marginBottom: 12,
+          display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+        }}>
           {article.excerpt}
         </p>
 
         {/* Meta */}
-        <div className="flex items-center justify-between text-xs pt-3" style={{ borderTop: '1px solid rgba(30,58,95,0.8)', color: '#475569' }}>
-          <div className="flex items-center gap-1">
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <span>{formatDate(article.publishedAt)}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>{readTime} دقائق</span>
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.7rem', color: '#3f3f46', paddingTop: 10, borderTop: '1px solid #1a1a1e' }}>
+          <span>{formatDate(article.publishedAt)}</span>
+          <span>{readTime} دقائق</span>
         </div>
       </article>
     </Link>
