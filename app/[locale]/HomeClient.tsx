@@ -41,7 +41,7 @@ export default function HomeClient({ articles, categories }: HomeClientProps) {
   return (
     <div className="w-full max-w-6xl mx-auto px-4 py-10">
       {/* Search & Filter */}
-      <div className="card-dark-elevated p-5 mb-8">
+      <div className="card-dark-elevated p-5 mb-8 max-w-3xl mx-auto">
         <div className="flex flex-col gap-4">
           {/* Search */}
           <div className="relative w-full">
