@@ -19,33 +19,33 @@ export default async function HomePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#0f172a' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#0f172a' }}>
       <Navbar />
       <CryptoTicker />
-      <main className="flex-1 flex flex-col">
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         {/* Hero Section */}
-        <section className="hero-bg relative py-20 md:py-28 px-4 overflow-hidden">
+        <section className="hero-bg" style={{ position: 'relative', padding: '5rem 1rem', overflow: 'hidden' }}>
           {/* Decorative blurs */}
-          <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-            <div className="absolute top-10 right-10 w-72 h-72 rounded-full opacity-10 blur-3xl" style={{ background: '#f59e0b' }} />
-            <div className="absolute bottom-10 left-10 w-96 h-96 rounded-full opacity-10 blur-3xl" style={{ background: '#3b82f6' }} />
+          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} aria-hidden="true">
+            <div style={{ position: 'absolute', top: 40, right: 40, width: 288, height: 288, borderRadius: '50%', opacity: 0.1, filter: 'blur(60px)', background: '#f59e0b' }} />
+            <div style={{ position: 'absolute', bottom: 40, left: 40, width: 384, height: 384, borderRadius: '50%', opacity: 0.1, filter: 'blur(80px)', background: '#3b82f6' }} />
           </div>
 
-          <div className="relative w-full max-w-4xl mx-auto text-center flex flex-col items-center">
+          <div style={{ position: 'relative', maxWidth: 896, margin: '0 auto', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             {/* Badge */}
-            <div className="badge-gold mb-8">
-              <span className="w-2 h-2 rounded-full animate-pulse inline-block bg-amber-500" />
+            <div className="badge-gold" style={{ marginBottom: '2rem' }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', display: 'inline-block', background: '#f59e0b', animation: 'pulse 2s infinite' }} />
               {t("badge")}
             </div>
 
             {/* Heading */}
-            <h1 className="text-4xl md:text-6xl font-black mb-5 leading-tight text-slate-100 w-full">
+            <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3.75rem)', fontWeight: 900, marginBottom: '1.25rem', lineHeight: 1.2, color: '#f1f5f9', width: '100%' }}>
               {t("title")}
-              <span className="block mt-2 gold-text">{t("brand")}</span>
+              <span className="gold-text" style={{ display: 'block', marginTop: '0.5rem' }}>{t("brand")}</span>
             </h1>
 
             {/* Subtitle */}
-            <p className="text-base md:text-lg leading-relaxed max-w-2xl mb-12 text-slate-500">
+            <p style={{ fontSize: 'clamp(0.9rem, 2vw, 1.125rem)', lineHeight: 1.8, maxWidth: 640, marginBottom: '3rem', color: '#64748b' }}>
               {t("subtitle")}
             </p>
 
@@ -57,8 +57,8 @@ export default async function HomePage() {
                 { value: stats.featured, label: t("stats.featured") },
               ].map((stat) => (
                 <div key={stat.label} className="stats-item">
-                  <div className="text-3xl font-black gold-text">{stat.value}</div>
-                  <div className="text-xs font-medium text-slate-500 mt-1">{stat.label}</div>
+                  <div className="gold-text" style={{ fontSize: '1.875rem', fontWeight: 900 }}>{stat.value}</div>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 500, color: '#64748b', marginTop: 4 }}>{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -66,7 +66,7 @@ export default async function HomePage() {
         </section>
 
         {/* Articles Section */}
-        <section style={{ background: '#0f172a' }} className="flex-1">
+        <section style={{ flex: 1, background: '#0f172a' }}>
           <HomeClient articles={allArticles} categories={categories} />
         </section>
       </main>
