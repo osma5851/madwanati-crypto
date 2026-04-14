@@ -9,46 +9,33 @@ export default function Footer() {
   const tNav = useTranslations("nav");
 
   return (
-    <footer style={{ background: '#0d1a2d', borderTop: '1px solid rgba(30,58,95,0.6)' }}>
+    <footer className="footer-bg">
       <div className="max-w-6xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
           {/* Brand */}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center"
-                style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', boxShadow: '0 4px 15px rgba(245,158,11,0.25)' }}
-              >
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center btn-gold">
                 <span className="text-slate-900 font-black text-xl">₿</span>
               </div>
-              <div>
-                <span
-                  className="text-lg font-black"
-                  style={{ background: 'linear-gradient(135deg, #f59e0b, #fcd34d)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
-                >
-                  {t("brand")}
-                </span>
-              </div>
+              <span className="text-lg font-black gold-text">{t("brand")}</span>
             </div>
-            <p className="text-sm leading-relaxed" style={{ color: '#64748b' }}>
-              {t("description")}
-            </p>
+            <p className="text-sm leading-relaxed text-slate-500">{t("description")}</p>
             <div className="mt-4 h-0.5 w-16 rounded-full" style={{ background: 'linear-gradient(90deg, #f59e0b, transparent)' }} />
           </div>
 
           {/* Categories */}
           <div>
-            <h3 className="font-bold mb-4 text-sm uppercase tracking-wider" style={{ color: '#f59e0b' }}>{t("categories")}</h3>
-            <ul className="space-y-2 text-sm">
+            <h3 className="font-bold mb-4 text-sm uppercase tracking-wider text-amber-500">{t("categories")}</h3>
+            <ul className="space-y-2.5 text-sm">
               {CATEGORIES.slice(0, 5).map((cat) => (
                 <li key={cat}>
                   <Link
                     href={`/?category=${cat}`}
-                    className="flex items-center gap-2 transition-colors duration-200 hover:translate-x-1 group"
-                    style={{ color: '#64748b' }}
+                    className="flex items-center gap-2 text-slate-500 hover:text-amber-400 transition-colors duration-200 group"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors duration-200 group-hover:bg-amber-400" style={{ background: '#1e3a5f' }} />
-                    <span className="group-hover:text-amber-400 transition-colors duration-200">{cat}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-700 group-hover:bg-amber-400 transition-colors" />
+                    {cat}
                   </Link>
                 </li>
               ))}
@@ -57,20 +44,20 @@ export default function Footer() {
 
           {/* Quick links */}
           <div>
-            <h3 className="font-bold mb-4 text-sm uppercase tracking-wider" style={{ color: '#f59e0b' }}>{t("quickLinks")}</h3>
-            <ul className="space-y-2 text-sm">
+            <h3 className="font-bold mb-4 text-sm uppercase tracking-wider text-amber-500">{t("quickLinks")}</h3>
+            <ul className="space-y-2.5 text-sm">
               {[
                 { href: "/", label: tNav("home") },
+                { href: "/market", label: tNav("market") },
                 { href: "/admin", label: tNav("admin") },
               ].map((item) => (
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className="flex items-center gap-2 transition-colors duration-200 group"
-                    style={{ color: '#64748b' }}
+                    className="flex items-center gap-2 text-slate-500 hover:text-amber-400 transition-colors duration-200 group"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors duration-200 group-hover:bg-amber-400" style={{ background: '#1e3a5f' }} />
-                    <span className="group-hover:text-amber-400 transition-colors duration-200">{item.label}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-700 group-hover:bg-amber-400 transition-colors" />
+                    {item.label}
                   </Link>
                 </li>
               ))}
@@ -78,11 +65,7 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom bar */}
-        <div
-          className="pt-8 text-center text-sm"
-          style={{ borderTop: '1px solid rgba(30,58,95,0.5)', color: '#334155' }}
-        >
+        <div className="pt-8 text-center text-sm text-slate-600" style={{ borderTop: '1px solid rgba(30,58,95,0.5)' }}>
           <p>{t("copyright", { year: new Date().getFullYear() })}</p>
         </div>
       </div>

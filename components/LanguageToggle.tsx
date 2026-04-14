@@ -10,7 +10,6 @@ export default function LanguageToggle() {
 
   const switchLocale = () => {
     const newLocale = locale === "ar" ? "en" : "ar";
-    // Replace the locale segment in the pathname
     const segments = pathname.split("/");
     segments[1] = newLocale;
     router.push(segments.join("/"));
@@ -19,12 +18,7 @@ export default function LanguageToggle() {
   return (
     <button
       onClick={switchLocale}
-      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105"
-      style={{
-        background: 'rgba(30,58,95,0.5)',
-        color: '#94a3b8',
-        border: '1px solid rgba(30,58,95,0.8)',
-      }}
+      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 bg-slate-800/60 border border-slate-700/50 text-slate-400 hover:text-amber-400"
       title={locale === "ar" ? "Switch to English" : "التبديل إلى العربية"}
     >
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
