@@ -3,24 +3,21 @@ import { createClient } from "@/lib/supabase/server";
 import { streamChat } from "@/lib/llm";
 
 export async function POST(request: NextRequest) {
-  // Require authentication
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
+      status: 401, headers: { "Content-Type": "application/json" },
     });
   }
 
   try {
-    const { messages } = await request.json();
+    const { messages, model } = await request.json();
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(JSON.stringify({ error: "Messages are required" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
+        status: 400, headers: { "Content-Type": "application/json" },
       });
     }
 
@@ -28,7 +25,7 @@ export async function POST(request: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          for await (const chunk of streamChat(messages)) {
+          for await (const chunk of streamChat(messages, model)) {
             controller.enqueue(encoder.encode(chunk));
           }
           controller.close();
@@ -47,8 +44,7 @@ export async function POST(request: NextRequest) {
     });
   } catch {
     return new Response(JSON.stringify({ error: "Failed to generate response" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
+      status: 500, headers: { "Content-Type": "application/json" },
     });
   }
 }
