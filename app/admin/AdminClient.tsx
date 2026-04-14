@@ -21,7 +21,7 @@ const sidebarItems: { key: View; label: string; icon: string }[] = [
   { key: "articles", label: "المقالات", icon: "📄" },
   { key: "new-article", label: "مقالة جديدة", icon: "✏️" },
   { key: "settings", label: "الإعدادات", icon: "⚙️" },
-  { key: "ai-tools", label: "أدوات AI", icon: "🤖" },
+  { key: "ai-tools", label: "LLM Studio", icon: "🧪" },
 ];
 
 export default function AdminClient({ articles: initialArticles }: Props) {
@@ -89,11 +89,27 @@ export default function AdminClient({ articles: initialArticles }: Props) {
   const handleAiCreateArticle = (data: { title: string; content: string; category: string; tags: string[] }) => {
     setEditingArticle(null);
     setView("new-article");
-    // We pass pre-filled data via a timeout to let the form mount first
     setTimeout(() => {
       const event = new CustomEvent("ai-prefill", { detail: data });
       window.dispatchEvent(event);
     }, 100);
+  };
+
+  const handleAiPublishArticle = async (data: { title: string; content: string; category: string; tags: string[]; featured: boolean; author_name: string }) => {
+    setLoading(true);
+    try {
+      const slug = data.title.toLowerCase().replace(/\s+/g, "-").replace(/[^\w\u0600-\u06FF-]/g, "").substring(0, 60) + "-" + Date.now();
+      const res = await fetch("/api/articles", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...data, slug, excerpt: data.content.substring(0, 200).replace(/[#*>\-\n]/g, "").trim() }),
+      });
+      if (res.ok) {
+        const { article } = await res.json();
+        setArticles((prev) => [article, ...prev]);
+        showToast("تم نشر المقالة بنجاح", "success");
+      } else showToast("فشل نشر المقالة", "error");
+    } catch { showToast("حدث خطأ", "error"); }
+    finally { setLoading(false); }
   };
 
   const filteredArticles = articles.filter(
@@ -304,7 +320,7 @@ export default function AdminClient({ articles: initialArticles }: Props) {
           {view === "settings" && <SettingsPanel onToast={showToast} />}
 
           {/* AI Tools */}
-          {view === "ai-tools" && <AiToolsPanel onCreateArticle={handleAiCreateArticle} onToast={showToast} />}
+          {view === "ai-tools" && <AiToolsPanel onCreateArticle={handleAiCreateArticle} onPublishArticle={handleAiPublishArticle} onToast={showToast} />}
 
         </main>
       </div>
