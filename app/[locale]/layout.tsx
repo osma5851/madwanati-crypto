@@ -4,6 +4,12 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { ThemeProvider } from "@/lib/theme-context";
 import AiChat from "@/components/AiChat";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "مدونات الكريبتو - Crypto Blog",
+  description: "منصة عربية متخصصة في عالم العملات الرقمية والتداول والتحليل الفني",
+};
 
 interface Props {
   children: React.ReactNode;
@@ -18,12 +24,10 @@ export default async function LocaleLayout({ children, params }: Props) {
   }
 
   const messages = await getMessages();
-
-  const dir = locale === "ar" ? "rtl" : "ltr";
-  const lang = locale;
+  const isRTL = locale === "ar";
 
   return (
-    <html lang={lang} dir={dir} className="h-full">
+    <html lang={locale} dir={isRTL ? "rtl" : "ltr"} className="h-full" style={{ background: '#0f172a' }}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -32,7 +36,16 @@ export default async function LocaleLayout({ children, params }: Props) {
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-full flex flex-col font-arabic antialiased">
+      <body
+        className="min-h-full font-arabic antialiased"
+        style={{
+          background: '#0f172a',
+          color: '#f1f5f9',
+          fontFamily: isRTL
+            ? "'Cairo', 'Noto Sans Arabic', 'Segoe UI', Tahoma, Arial, sans-serif"
+            : "'Inter', 'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif",
+        }}
+      >
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider>
             {children}

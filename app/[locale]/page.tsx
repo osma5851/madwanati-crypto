@@ -19,38 +19,38 @@ export default async function HomePage() {
   };
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col" style={{ background: '#0f172a' }}>
       <Navbar />
       <CryptoTicker />
-      <main className="flex-1">
+      <main className="flex-1 flex flex-col">
         {/* Hero Section */}
         <section className="hero-bg relative py-20 md:py-28 px-4 overflow-hidden">
           {/* Decorative blurs */}
-          <div className="absolute top-0 left-0 w-full h-full pointer-events-none" aria-hidden="true">
+          <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
             <div className="absolute top-10 right-10 w-72 h-72 rounded-full opacity-10 blur-3xl" style={{ background: '#f59e0b' }} />
             <div className="absolute bottom-10 left-10 w-96 h-96 rounded-full opacity-10 blur-3xl" style={{ background: '#3b82f6' }} />
           </div>
 
-          <div className="relative max-w-4xl mx-auto text-center">
+          <div className="relative w-full max-w-4xl mx-auto text-center flex flex-col items-center">
             {/* Badge */}
-            <div className="badge-gold mb-8 mx-auto w-fit">
+            <div className="badge-gold mb-8">
               <span className="w-2 h-2 rounded-full animate-pulse inline-block bg-amber-500" />
               {t("badge")}
             </div>
 
             {/* Heading */}
-            <h1 className="text-4xl md:text-6xl font-black mb-5 leading-tight text-slate-100">
+            <h1 className="text-4xl md:text-6xl font-black mb-5 leading-tight text-slate-100 w-full">
               {t("title")}
               <span className="block mt-2 gold-text">{t("brand")}</span>
             </h1>
 
             {/* Subtitle */}
-            <p className="text-base md:text-lg leading-relaxed max-w-2xl mx-auto mb-10 text-slate-500">
+            <p className="text-base md:text-lg leading-relaxed max-w-2xl mb-12 text-slate-500">
               {t("subtitle")}
             </p>
 
             {/* Stats */}
-            <div className="stats-box mx-auto">
+            <div className="stats-box">
               {[
                 { value: stats.total, label: t("stats.articles") },
                 { value: stats.categories, label: t("stats.categories") },
@@ -65,9 +65,12 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <HomeClient articles={allArticles} categories={categories} />
+        {/* Articles Section */}
+        <section style={{ background: '#0f172a' }} className="flex-1">
+          <HomeClient articles={allArticles} categories={categories} />
+        </section>
       </main>
       <Footer />
-    </>
+    </div>
   );
 }
