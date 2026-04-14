@@ -35,102 +35,133 @@ export default function AdminLogin() {
     }
   };
 
+  const inputStyle: React.CSSProperties = {
+    width: '100%',
+    padding: '0.75rem 2.5rem 0.75rem 1rem',
+    background: 'rgba(255,255,255,0.08)',
+    border: '1px solid rgba(255,255,255,0.15)',
+    color: '#fff',
+    borderRadius: 12,
+    fontSize: '0.9rem',
+    outline: 'none',
+    direction: 'rtl' as const,
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-teal-900 to-slate-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #0f172a 0%, #134e4a 50%, #0f172a 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '1rem',
+    }}>
+      <div style={{ width: '100%', maxWidth: 420 }}>
         {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-teal-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-teal-500/30">
-            <span className="text-white font-black text-3xl">م</span>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <div style={{
+            width: 64,
+            height: 64,
+            background: '#14b8a6',
+            borderRadius: 16,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 16px',
+            boxShadow: '0 8px 24px rgba(20,184,166,0.3)',
+          }}>
+            <span style={{ color: '#fff', fontWeight: 900, fontSize: 28 }}>₿</span>
           </div>
-          <h1 className="text-2xl font-black text-white">مدونات الكريبتو</h1>
-          <p className="text-teal-300 text-sm mt-1">لوحة التحكم</p>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#fff', margin: 0 }}>مدونات الكريبتو</h1>
+          <p style={{ color: '#5eead4', fontSize: '0.875rem', marginTop: 4 }}>لوحة التحكم</p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-8 shadow-2xl">
-          <h2 className="text-xl font-bold text-white mb-6 text-center">
+        <div style={{
+          background: 'rgba(255,255,255,0.07)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          border: '1px solid rgba(255,255,255,0.12)',
+          borderRadius: 20,
+          padding: '2rem',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+        }}>
+          <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#fff', marginBottom: 24, textAlign: 'center' }}>
             تسجيل الدخول
           </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-teal-200 text-sm font-medium mb-2">
+          <form onSubmit={handleSubmit}>
+            {/* Email */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ display: 'block', color: '#99f6e4', fontSize: '0.85rem', fontWeight: 500, marginBottom: 8 }}>
                 البريد الإلكتروني
               </label>
-              <div className="relative">
-                <svg
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                </svg>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="أدخل البريد الإلكتروني"
-                  className="w-full pr-10 pl-4 py-3 bg-white/10 border border-white/20 text-white placeholder-gray-400 rounded-xl focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-400/30 transition-all"
-                  dir="rtl"
-                  required
-                />
-              </div>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="أدخل البريد الإلكتروني"
+                style={inputStyle}
+                required
+              />
             </div>
 
-            <div>
-              <label className="block text-teal-200 text-sm font-medium mb-2">
+            {/* Password */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ display: 'block', color: '#99f6e4', fontSize: '0.85rem', fontWeight: 500, marginBottom: 8 }}>
                 كلمة المرور
               </label>
-              <div className="relative">
-                <svg
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="أدخل كلمة المرور"
-                  className="w-full pr-10 pl-4 py-3 bg-white/10 border border-white/20 text-white placeholder-gray-400 rounded-xl focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-400/30 transition-all"
-                  dir="rtl"
-                  required
-                />
-              </div>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="أدخل كلمة المرور"
+                style={inputStyle}
+                required
+              />
             </div>
 
+            {/* Error */}
             {error && (
-              <div className="bg-red-500/20 border border-red-400/30 rounded-xl px-4 py-3 text-red-200 text-sm">
+              <div style={{
+                background: 'rgba(239,68,68,0.15)',
+                border: '1px solid rgba(239,68,68,0.3)',
+                borderRadius: 12,
+                padding: '0.75rem 1rem',
+                color: '#fca5a5',
+                fontSize: '0.85rem',
+                marginBottom: 20,
+                textAlign: 'center',
+              }}>
                 {error}
               </div>
             )}
 
+            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-teal-500 hover:bg-teal-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl transition-all duration-200 shadow-lg shadow-teal-500/30 hover:shadow-teal-500/50"
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                background: '#14b8a6',
+                color: '#fff',
+                fontWeight: 700,
+                fontSize: '1rem',
+                borderRadius: 12,
+                border: 'none',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1,
+                boxShadow: '0 4px 16px rgba(20,184,166,0.3)',
+                transition: 'all 0.2s',
+              }}
             >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  جاري التحقق...
-                </span>
-              ) : (
-                "دخول"
-              )}
+              {loading ? "جاري التحقق..." : "دخول"}
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <a href="/" className="text-teal-300 hover:text-teal-200 text-sm transition-colors">
+          <div style={{ marginTop: 24, textAlign: 'center' }}>
+            <a href="/" style={{ color: '#5eead4', fontSize: '0.85rem', textDecoration: 'none' }}>
               العودة إلى المدونة
             </a>
           </div>
