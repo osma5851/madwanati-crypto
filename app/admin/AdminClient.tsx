@@ -6,19 +6,33 @@ import Link from "next/link";
 import { Article } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 import ArticleForm from "./ArticleForm";
+import DashboardPanel from "./DashboardPanel";
+import SettingsPanel from "./SettingsPanel";
+import AiToolsPanel from "./AiToolsPanel";
 
 interface Props {
   articles: Article[];
 }
 
+type View = "dashboard" | "articles" | "new-article" | "edit-article" | "settings" | "ai-tools";
+
+const sidebarItems: { key: View; label: string; icon: string }[] = [
+  { key: "dashboard", label: "لوحة التحكم", icon: "📊" },
+  { key: "articles", label: "المقالات", icon: "📄" },
+  { key: "new-article", label: "مقالة جديدة", icon: "✏️" },
+  { key: "settings", label: "الإعدادات", icon: "⚙️" },
+  { key: "ai-tools", label: "أدوات AI", icon: "🤖" },
+];
+
 export default function AdminClient({ articles: initialArticles }: Props) {
   const [articles, setArticles] = useState<Article[]>(initialArticles);
-  const [view, setView] = useState<"list" | "create" | "edit">("list");
+  const [view, setView] = useState<View>("dashboard");
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const router = useRouter();
 
   const showToast = (msg: string, type: "success" | "error" = "success") => {
@@ -39,296 +53,279 @@ export default function AdminClient({ articles: initialArticles }: Props) {
         setArticles((prev) => prev.filter((a) => a.id !== id));
         setDeleteConfirm(null);
         showToast("تم حذف المقالة بنجاح");
-      } else {
-        showToast("فشل حذف المقالة", "error");
-      }
-    } catch {
-      showToast("حدث خطأ", "error");
-    } finally {
-      setLoading(false);
-    }
+      } else showToast("فشل حذف المقالة", "error");
+    } catch { showToast("حدث خطأ", "error"); }
+    finally { setLoading(false); }
   };
 
   const handleSave = async (data: Partial<Article>) => {
     setLoading(true);
     try {
       if (editingArticle) {
-        // Update
         const res = await fetch(`/api/articles/${editingArticle.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
+          method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data),
         });
         if (res.ok) {
           const { article } = await res.json();
           setArticles((prev) => prev.map((a) => (a.id === article.id ? article : a)));
           showToast("تم تحديث المقالة بنجاح");
-          setView("list");
-          setEditingArticle(null);
-        } else {
-          showToast("فشل تحديث المقالة", "error");
-        }
+          setView("articles"); setEditingArticle(null);
+        } else showToast("فشل تحديث المقالة", "error");
       } else {
-        // Create
         const res = await fetch("/api/articles", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
+          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data),
         });
         if (res.ok) {
           const { article } = await res.json();
           setArticles((prev) => [article, ...prev]);
           showToast("تم إنشاء المقالة بنجاح");
-          setView("list");
-        } else {
-          const err = await res.json();
-          showToast(err.error || "فشل إنشاء المقالة", "error");
-        }
+          setView("articles");
+        } else { const err = await res.json(); showToast(err.error || "فشل إنشاء المقالة", "error"); }
       }
-    } catch {
-      showToast("حدث خطأ", "error");
-    } finally {
-      setLoading(false);
-    }
+    } catch { showToast("حدث خطأ", "error"); }
+    finally { setLoading(false); }
+  };
+
+  const handleAiCreateArticle = (data: { title: string; content: string; category: string; tags: string[] }) => {
+    setEditingArticle(null);
+    setView("new-article");
+    // We pass pre-filled data via a timeout to let the form mount first
+    setTimeout(() => {
+      const event = new CustomEvent("ai-prefill", { detail: data });
+      window.dispatchEvent(event);
+    }, 100);
   };
 
   const filteredArticles = articles.filter(
-    (a) =>
-      !searchQuery ||
-      a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      a.category.toLowerCase().includes(searchQuery.toLowerCase())
+    (a) => !searchQuery || a.title.includes(searchQuery) || a.category.includes(searchQuery)
   );
 
-  const stats = {
-    total: articles.length,
-    featured: articles.filter((a) => a.featured).length,
-    categories: [...new Set(articles.map((a) => a.category))].length,
-  };
+  const activeView = view === "edit-article" ? "articles" : view;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={{ minHeight: '100vh', display: 'flex', background: '#0f172a', color: '#f1f5f9' }}>
       {/* Toast */}
       {toast && (
-        <div
-          className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-lg text-white font-medium text-sm transition-all ${
-            toast.type === "success" ? "bg-teal-600" : "bg-red-500"
-          }`}
-        >
+        <div style={{
+          position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)', zIndex: 100,
+          padding: '0.65rem 1.5rem', borderRadius: 12, color: '#fff', fontWeight: 600, fontSize: '0.85rem',
+          background: toast.type === "success" ? '#14b8a6' : '#ef4444',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+        }}>
           {toast.msg}
         </div>
       )}
 
-      {/* Header */}
-      <header className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-teal-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">م</span>
-            </div>
-            <div>
-              <span className="font-bold text-gray-900">لوحة التحكم</span>
-              <span className="text-gray-400 text-xs mx-2">•</span>
-              <span className="text-gray-500 text-sm">مدونتي</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              target="_blank"
-              className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-teal-600 transition-colors px-3 py-1.5 hover:bg-teal-50 rounded-lg"
+      {/* Sidebar */}
+      <aside style={{
+        width: sidebarOpen ? 220 : 60,
+        background: '#111827',
+        borderLeft: '1px solid rgba(30,58,95,0.6)',
+        display: 'flex', flexDirection: 'column',
+        transition: 'width 0.2s',
+        flexShrink: 0,
+        position: 'sticky', top: 0, height: '100vh',
+        overflowY: 'auto',
+      }}>
+        {/* Sidebar Header */}
+        <div style={{ padding: '1rem', borderBottom: '1px solid rgba(30,58,95,0.4)', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: 10,
+            background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontWeight: 900, fontSize: '1.1rem', color: '#0f172a', flexShrink: 0,
+          }}>₿</div>
+          {sidebarOpen && <span style={{ fontWeight: 800, fontSize: '0.9rem', color: '#f59e0b' }}>مدونات الكريبتو</span>}
+        </div>
+
+        {/* Nav Items */}
+        <nav style={{ flex: 1, padding: '0.5rem' }}>
+          {sidebarItems.map((item) => (
+            <button
+              key={item.key}
+              onClick={() => { setView(item.key); setEditingArticle(null); }}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                padding: sidebarOpen ? '0.6rem 0.75rem' : '0.6rem',
+                justifyContent: sidebarOpen ? 'flex-start' : 'center',
+                borderRadius: 10, border: 'none', cursor: 'pointer',
+                marginBottom: 2,
+                background: activeView === item.key ? 'rgba(245,158,11,0.1)' : 'transparent',
+                color: activeView === item.key ? '#f59e0b' : '#64748b',
+                fontWeight: activeView === item.key ? 700 : 500,
+                fontSize: '0.85rem', transition: 'all 0.15s',
+              }}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
-              عرض المدونة
+              <span style={{ fontSize: '1.1rem' }}>{item.icon}</span>
+              {sidebarOpen && <span>{item.label}</span>}
+            </button>
+          ))}
+        </nav>
+
+        {/* Sidebar Footer */}
+        <div style={{ padding: '0.75rem', borderTop: '1px solid rgba(30,58,95,0.4)' }}>
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            style={{
+              width: '100%', padding: '0.5rem', borderRadius: 8,
+              background: 'rgba(30,58,95,0.3)', border: 'none',
+              color: '#64748b', cursor: 'pointer', fontSize: '0.8rem',
+            }}
+          >
+            {sidebarOpen ? "→ تصغير" : "←"}
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        {/* Top Bar */}
+        <header style={{
+          padding: '0.75rem 1.5rem',
+          borderBottom: '1px solid rgba(30,58,95,0.6)',
+          background: '#0f172a',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          position: 'sticky', top: 0, zIndex: 10,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontWeight: 700, fontSize: '0.95rem', color: '#e2e8f0' }}>
+              {sidebarItems.find((s) => s.key === activeView)?.icon}{" "}
+              {sidebarItems.find((s) => s.key === activeView)?.label}
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Link
+              href="/" target="_blank"
+              style={{ fontSize: '0.8rem', color: '#64748b', textDecoration: 'none', padding: '0.4rem 0.8rem', borderRadius: 8, background: 'rgba(30,58,95,0.3)' }}
+            >
+              👁 عرض الموقع
             </Link>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-700 transition-colors px-3 py-1.5 hover:bg-red-50 rounded-lg"
+              style={{ fontSize: '0.8rem', color: '#ef4444', background: 'rgba(239,68,68,0.1)', border: 'none', padding: '0.4rem 0.8rem', borderRadius: 8, cursor: 'pointer' }}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
               خروج
             </button>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {view === "list" ? (
-          <>
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-4 mb-8">
-              <div className="bg-white rounded-xl border border-gray-100 p-5 text-center">
-                <div className="text-3xl font-black text-teal-600 mb-1">{stats.total}</div>
-                <div className="text-gray-500 text-sm">إجمالي المقالات</div>
-              </div>
-              <div className="bg-white rounded-xl border border-gray-100 p-5 text-center">
-                <div className="text-3xl font-black text-amber-500 mb-1">{stats.featured}</div>
-                <div className="text-gray-500 text-sm">مقالات مميزة</div>
-              </div>
-              <div className="bg-white rounded-xl border border-gray-100 p-5 text-center">
-                <div className="text-3xl font-black text-purple-500 mb-1">{stats.categories}</div>
-                <div className="text-gray-500 text-sm">التصنيفات</div>
-              </div>
-            </div>
+        {/* Content Area */}
+        <main style={{ flex: 1, padding: '1.5rem', overflowY: 'auto' }}>
 
-            {/* Toolbar */}
-            <div className="flex items-center justify-between gap-4 mb-5">
-              <div className="relative flex-1 max-w-sm">
-                <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="بحث في المقالات..."
-                  className="w-full pr-9 pl-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
-                  dir="rtl"
-                />
-              </div>
-              <button
-                onClick={() => {
-                  setEditingArticle(null);
-                  setView("create");
-                }}
-                className="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-xl font-medium text-sm transition-colors shadow-sm"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                مقالة جديدة
-              </button>
-            </div>
+          {/* Dashboard */}
+          {view === "dashboard" && (
+            <DashboardPanel articles={articles} onNavigate={(v) => setView(v as View)} />
+          )}
 
-            {/* Articles Table */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              {filteredArticles.length === 0 ? (
-                <div className="text-center py-16 text-gray-400">
-                  <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  لا توجد مقالات
+          {/* Articles List */}
+          {view === "articles" && (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+                <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#f1f5f9', margin: 0 }}>المقالات</h1>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="بحث..."
+                    dir="rtl"
+                    style={{
+                      padding: '0.45rem 0.75rem', background: '#1e293b',
+                      border: '1px solid rgba(30,58,95,0.8)', color: '#e2e8f0',
+                      borderRadius: 8, fontSize: '0.8rem', outline: 'none', width: 200,
+                    }}
+                  />
+                  <button
+                    onClick={() => { setEditingArticle(null); setView("new-article"); }}
+                    style={{
+                      background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                      color: '#0f172a', fontWeight: 700, fontSize: '0.8rem',
+                      padding: '0.45rem 1rem', borderRadius: 8, border: 'none', cursor: 'pointer',
+                    }}
+                  >
+                    + جديدة
+                  </button>
                 </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+              </div>
+
+              {/* Table */}
+              <div style={{ background: '#1e293b', border: '1px solid rgba(30,58,95,0.8)', borderRadius: 16, overflow: 'hidden' }}>
+                {filteredArticles.length === 0 ? (
+                  <div style={{ padding: 48, textAlign: 'center', color: '#475569' }}>لا توجد مقالات</div>
+                ) : (
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
                     <thead>
-                      <tr className="border-b border-gray-100 bg-gray-50">
-                        <th className="text-right text-gray-500 font-semibold px-5 py-3">العنوان</th>
-                        <th className="text-right text-gray-500 font-semibold px-5 py-3 hidden md:table-cell">التصنيف</th>
-                        <th className="text-right text-gray-500 font-semibold px-5 py-3 hidden lg:table-cell">التاريخ</th>
-                        <th className="text-right text-gray-500 font-semibold px-5 py-3 hidden md:table-cell">مميزة</th>
-                        <th className="text-right text-gray-500 font-semibold px-5 py-3">إجراءات</th>
+                      <tr style={{ borderBottom: '1px solid rgba(30,58,95,0.6)', background: 'rgba(15,23,42,0.5)' }}>
+                        <th style={{ textAlign: 'right', padding: '0.75rem 1rem', color: '#64748b', fontWeight: 600 }}>العنوان</th>
+                        <th style={{ textAlign: 'right', padding: '0.75rem 1rem', color: '#64748b', fontWeight: 600 }}>التصنيف</th>
+                        <th style={{ textAlign: 'right', padding: '0.75rem 1rem', color: '#64748b', fontWeight: 600 }}>التاريخ</th>
+                        <th style={{ textAlign: 'center', padding: '0.75rem 1rem', color: '#64748b', fontWeight: 600 }}>مميزة</th>
+                        <th style={{ textAlign: 'center', padding: '0.75rem 1rem', color: '#64748b', fontWeight: 600 }}>إجراءات</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredArticles.map((article) => (
-                        <tr key={article.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                          <td className="px-5 py-4">
-                            <div className="font-medium text-gray-900 line-clamp-1">{article.title}</div>
-                            <div className="text-gray-400 text-xs mt-0.5 line-clamp-1">{article.excerpt}</div>
+                      {filteredArticles.map((article, i) => (
+                        <tr key={article.id} style={{ borderBottom: i < filteredArticles.length - 1 ? '1px solid rgba(30,58,95,0.3)' : 'none' }}>
+                          <td style={{ padding: '0.7rem 1rem' }}>
+                            <div style={{ fontWeight: 600, color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 300 }}>{article.title}</div>
                           </td>
-                          <td className="px-5 py-4 hidden md:table-cell">
-                            <span className="bg-teal-50 text-teal-700 text-xs px-2.5 py-1 rounded-full font-medium">
-                              {article.category}
-                            </span>
+                          <td style={{ padding: '0.7rem 1rem' }}>
+                            <span style={{ background: 'rgba(20,184,166,0.1)', color: '#5eead4', fontSize: '0.75rem', padding: '2px 8px', borderRadius: 20 }}>{article.category}</span>
                           </td>
-                          <td className="px-5 py-4 text-gray-500 text-xs hidden lg:table-cell">
-                            {formatDate(article.publishedAt)}
+                          <td style={{ padding: '0.7rem 1rem', color: '#64748b', fontSize: '0.8rem' }}>{formatDate(article.publishedAt)}</td>
+                          <td style={{ padding: '0.7rem 1rem', textAlign: 'center' }}>
+                            {article.featured ? <span style={{ color: '#f59e0b' }}>⭐</span> : <span style={{ color: '#334155' }}>—</span>}
                           </td>
-                          <td className="px-5 py-4 hidden md:table-cell">
-                            {article.featured ? (
-                              <span className="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded-full">نعم</span>
-                            ) : (
-                              <span className="text-gray-300 text-xs">-</span>
-                            )}
-                          </td>
-                          <td className="px-5 py-4">
-                            <div className="flex items-center gap-2">
-                              <Link
-                                href={`/articles/${article.slug}`}
-                                target="_blank"
-                                className="p-1.5 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
-                                title="عرض"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                              </Link>
-                              <button
-                                onClick={() => {
-                                  setEditingArticle(article);
-                                  setView("edit");
-                                }}
-                                className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                title="تعديل"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                              </button>
-                              <button
-                                onClick={() => setDeleteConfirm(article.id)}
-                                className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                title="حذف"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                              </button>
+                          <td style={{ padding: '0.7rem 1rem', textAlign: 'center' }}>
+                            <div style={{ display: 'flex', gap: 4, justifyContent: 'center' }}>
+                              <button onClick={() => { setEditingArticle(article); setView("edit-article"); }} style={{ padding: '4px 8px', background: 'rgba(59,130,246,0.1)', color: '#93c5fd', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: '0.75rem' }}>تعديل</button>
+                              <button onClick={() => setDeleteConfirm(article.id)} style={{ padding: '4px 8px', background: 'rgba(239,68,68,0.1)', color: '#fca5a5', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: '0.75rem' }}>حذف</button>
                             </div>
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </>
-        ) : (
-          <ArticleForm
-            article={editingArticle}
-            onSave={handleSave}
-            onCancel={() => {
-              setView("list");
-              setEditingArticle(null);
-            }}
-            loading={loading}
-          />
-        )}
+          )}
+
+          {/* New / Edit Article */}
+          {(view === "new-article" || view === "edit-article") && (
+            <ArticleForm
+              article={editingArticle}
+              onSave={handleSave}
+              onCancel={() => { setView("articles"); setEditingArticle(null); }}
+              loading={loading}
+            />
+          )}
+
+          {/* Settings */}
+          {view === "settings" && <SettingsPanel onToast={showToast} />}
+
+          {/* AI Tools */}
+          {view === "ai-tools" && <AiToolsPanel onCreateArticle={handleAiCreateArticle} onToast={showToast} />}
+
+        </main>
       </div>
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Modal */}
       {deleteConfirm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl">
-            <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-bold text-center text-gray-900 mb-2">حذف المقالة؟</h3>
-            <p className="text-gray-500 text-center text-sm mb-6">
-              هذا الإجراء لا يمكن التراجع عنه. هل أنت متأكد من حذف هذه المقالة؟
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setDeleteConfirm(null)}
-                className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
-              >
-                إلغاء
-              </button>
-              <button
-                onClick={() => handleDelete(deleteConfirm)}
-                disabled={loading}
-                className="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors disabled:opacity-50"
-              >
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 16,
+        }}>
+          <div style={{
+            background: '#1e293b', borderRadius: 20, padding: '2rem',
+            maxWidth: 380, width: '100%', textAlign: 'center',
+            border: '1px solid rgba(30,58,95,0.8)', boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+          }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>⚠️</div>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#f1f5f9', marginBottom: 8 }}>حذف المقالة؟</h3>
+            <p style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: 24 }}>هذا الإجراء لا يمكن التراجع عنه</p>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button onClick={() => setDeleteConfirm(null)} style={{ flex: 1, padding: '0.6rem', border: '1px solid rgba(30,58,95,0.8)', background: 'transparent', color: '#94a3b8', borderRadius: 10, cursor: 'pointer', fontWeight: 600 }}>إلغاء</button>
+              <button onClick={() => handleDelete(deleteConfirm)} disabled={loading} style={{ flex: 1, padding: '0.6rem', background: '#ef4444', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 600, opacity: loading ? 0.6 : 1 }}>
                 {loading ? "جاري الحذف..." : "حذف"}
               </button>
             </div>
