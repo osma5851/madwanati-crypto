@@ -322,3 +322,64 @@ html[dir="ltr"] .prose-arabic blockquote {
 /* Admin card dark alias */
 .card-dark { background: #111113; border: 1px solid #27272a; border-radius: 0.75rem; }
 .card-dark-elevated { background: #111113; border: 1px solid #27272a; border-radius: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+
+/* ============================================
+   LIGHT MODE — override everything
+   ============================================ */
+html.light body,
+html.light { background: #fafafa !important; color: #09090b !important; }
+
+html.light .nav-bar { background: rgba(255,255,255,0.85) !important; border-bottom-color: #e4e4e7 !important; }
+html.light .hero-bg { background: #f4f4f5 !important; }
+html.light .hero-bg::before { background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(168,85,247,0.08), transparent) !important; }
+
+html.light .flux-card,
+html.light .flux-card-elevated,
+html.light .card-dark,
+html.light .card-dark-elevated { background: #fff !important; border-color: #e4e4e7 !important; }
+html.light .flux-card:hover { border-color: #d4d4d8 !important; box-shadow: 0 4px 16px rgba(0,0,0,0.06) !important; }
+
+html.light .stats-box { background: #fff !important; border-color: #e4e4e7 !important; }
+html.light .stats-item + .stats-item { border-color: #e4e4e7 !important; }
+html.light html[dir="rtl"] .stats-item + .stats-item { border-color: #e4e4e7 !important; }
+
+html.light .ticker-bar { background: #f4f4f5 !important; border-bottom-color: #e4e4e7 !important; }
+html.light .footer-bg { background: #f4f4f5 !important; border-top-color: #e4e4e7 !important; }
+
+html.light .btn-outline { border-color: #d4d4d8 !important; color: #52525b !important; }
+html.light .btn-outline:hover { background: #f4f4f5 !important; border-color: #a1a1aa !important; color: #09090b !important; }
+
+html.light .flux-input,
+html.light .search-input { background: #f4f4f5 !important; border-color: #d4d4d8 !important; color: #09090b !important; }
+html.light .flux-input::placeholder,
+html.light .search-input::placeholder { color: #a1a1aa !important; }
+
+html.light .cat-btn-inactive { background: #f4f4f5 !important; border-color: #d4d4d8 !important; color: #52525b !important; }
+html.light .cat-btn-inactive:hover { border-color: #a1a1aa !important; color: #09090b !important; }
+
+html.light .badge-primary { background: rgba(168,85,247,0.06) !important; border-color: rgba(168,85,247,0.15) !important; color: #7c3aed !important; }
+html.light .badge-gold { background: rgba(245,158,11,0.06) !important; border-color: rgba(245,158,11,0.15) !important; color: #b45309 !important; }
+
+html.light .gold-text {
+  background: linear-gradient(135deg, #d97706, #b45309, #d97706) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+html.light .card-accent::before { background: linear-gradient(180deg, #a855f7, #c084fc) !important; }
+
+/* Light prose */
+html.light .prose-arabic h1, html.light .prose-arabic h2, html.light .prose-arabic h3 { color: #09090b !important; }
+html.light .prose-arabic h3 { color: #7c3aed !important; }
+html.light .prose-arabic p, html.light .prose-arabic li,
+html.light .prose-arabic ul, html.light .prose-arabic ol { color: #3f3f46 !important; }
+html.light .prose-arabic h2 { border-bottom-color: #e4e4e7 !important; }
+html.light .prose-arabic blockquote { background: #f4f4f5 !important; color: #7c3aed !important; }
+html.light .prose-arabic code { background: #f4f4f5 !important; color: #7c3aed !important; }
+html.light .prose-arabic pre { background: #f4f4f5 !important; border-color: #e4e4e7 !important; }
+html.light .prose-arabic strong { color: #b45309 !important; }
+
+/* Light scrollbar */
+html.light ::-webkit-scrollbar-track { background: #fafafa !important; }
+html.light ::-webkit-scrollbar-thumb { background: #d4d4d8 !important; }
+html.light ::-webkit-scrollbar-thumb:hover { background: #a1a1aa !important; }

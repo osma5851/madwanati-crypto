@@ -27,7 +27,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   const isRTL = locale === "ar";
 
   return (
-    <html lang={locale} dir={isRTL ? "rtl" : "ltr"} className="h-full" style={{ background: '#09090b' }}>
+    <html lang={locale} dir={isRTL ? "rtl" : "ltr"} className="h-full">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -39,8 +39,6 @@ export default async function LocaleLayout({ children, params }: Props) {
       <body
         className="min-h-full font-arabic antialiased"
         style={{
-          background: '#09090b',
-          color: '#fafafa',
           fontFamily: isRTL
             ? "'Cairo', 'Noto Sans Arabic', 'Segoe UI', Tahoma, Arial, sans-serif"
             : "'Inter', 'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif",
